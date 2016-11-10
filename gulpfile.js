@@ -1,8 +1,6 @@
 //jshint node:true
 'use strict';
 
-var path = require('path');
-
 var gulp          = require('gulp'),
     gutil         = require('gulp-util'),
     sourcemaps    = require('gulp-sourcemaps'),

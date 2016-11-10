@@ -1,12 +1,8 @@
 {
     "name": "ng2-heroes-gulp",
     "version": "1.0.0",
-    "scripts": {
-        "start": "tsc && concurrently \"tsc -w\" \"lite-server\"",
-        "lite": "lite-server",
-        "tsc": "tsc",
-        "tsc:w": "tsc -w"
-    },
+    "description": "Famous angular 2 tutorial: tour of heroes with gulpjs",
+    "repository": "ibqn/ng2-heroes-gulp",
     "dependencies": {
         "@angular/common": "~2.1.1",
         "@angular/compiler": "~2.1.1",

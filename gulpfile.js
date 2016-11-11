@@ -10,7 +10,7 @@ var fs   = require('fs'),
     path = require('path'),
     url  = require('url');
 
-var defaultFile = "index.html"
+var defaultFile = "index.html";
 
 var browserSync = require('browser-sync').create();
 

@@ -1,9 +1,12 @@
 //jshint node:true
+'esversion:6';
 'use strict';
 
 var gulp          = require('gulp'),
     gutil         = require('gulp-util'),
     sourcemaps    = require('gulp-sourcemaps'),
+    filter        = require('gulp-filter'),
+    gulpif        = require('gulp-if'),
     typescript    = require('gulp-typescript');
 
 var fs   = require('fs'),
@@ -79,9 +82,13 @@ gulp.task('copylibs', function() {
 
 
 gulp.task('ts', function() {
+    // filter main-aot.ts file in development
+    var f = filter(['**', '!**/main-aot.ts']);
+
     return gulp.src([
         sources.ts,
     ])
+    .pipe(gulpif(!isProd, f))
     .pipe(sourcemaps.init())
     .pipe(typescript(tscConfig.compilerOptions))
     .pipe(sourcemaps.write('.'))

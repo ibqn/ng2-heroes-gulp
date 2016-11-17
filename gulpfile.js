@@ -7,11 +7,14 @@ var gulp          = require('gulp'),
     sourcemaps    = require('gulp-sourcemaps'),
     filter        = require('gulp-filter'),
     gulpif        = require('gulp-if'),
+    rename        = require("gulp-rename"),
     typescript    = require('gulp-typescript');
 
 var fs   = require('fs'),
     path = require('path'),
     url  = require('url');
+
+var exec = require('child_process').exec;
 
 var defaultFile = "index.html";
 
@@ -19,7 +22,8 @@ var browserSync = require('browser-sync').create();
 
 var tscConfig = require('./tsconfig.json');
 
-
+// gulp should be called like this :
+// $ gulp --type aot
 var isProd = gutil.env.type === 'prod' || gutil.env.type === 'aot';
 
 
@@ -38,10 +42,19 @@ var targets = {
     css: targetsPath + 'css/',
     html: targetsPath,
     js: targetsPath + 'js/',
+    ts: targetsPath  +  (isProd? '' : 'js/app/'),
 };
 
 
 gulp.task('copylibs', function() {
+    if (isProd) {
+        return gulp.src([
+            'core-js/client/shim',
+            'zone.js/dist/zone',
+        ].map(function(i) { return 'node_modules/' + i + '.min.js*'; }))
+        .pipe(gulp.dest(targets.js));
+    }
+
     // angular dependencies: *js and *map files
     gulp.src([
         'core',
@@ -89,10 +102,10 @@ gulp.task('ts', function() {
         sources.ts,
     ])
     .pipe(gulpif(!isProd, f))
-    .pipe(sourcemaps.init())
-    .pipe(typescript(tscConfig.compilerOptions))
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest(targets.js + 'app'));
+    .pipe(gulpif(!isProd, sourcemaps.init()))
+    .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
+    .pipe(gulpif(!isProd, sourcemaps.write('.')))
+    .pipe(gulp.dest(targets.ts));
 });
 
 
@@ -104,12 +117,51 @@ gulp.task('css', function() {
 
 
 gulp.task('html', function() {
-    var f = filter(['**', '!**/index-aot.html']);
+    var f = filter([
+        '**/index' + (isProd? '-aot' : '') + '.html'
+    ]);
+
+    gulp.src(sources.html)
+    .pipe(f)
+    .pipe(rename({basename: 'index'}))
+    .pipe(gulp.dest(targets.html));
+
+    var f = filter(['**', '!**/index*.html']);
+
     return gulp.src(sources.html)
-    .pipe(gulpif(!isProd, f))
+    .pipe(f)
     .pipe(gulp.dest(targets.html));
 });
 
+var run_proc = function(cmd) {
+    var proc = exec(cmd);
+    proc.stderr.on('data', function(data) {
+        process.stdout.write(data);
+    });
+
+    proc.stdout.on('data', function(data) {
+        process.stdout.write(data);
+    });
+
+    proc.on('end', function() {
+        process.exit()
+    });
+};
+
+gulp.task('ngc', ['css', 'html', 'ts'], function() {
+    if (isProd) {
+        var cmd  = 'node_modules/.bin/ngc -p tsconfig-aot.json';
+        return run_proc(cmd);
+    }
+});
+
+
+gulp.task('rollup', ['ngc'], function() {
+    if (isProd) {
+        var cmd  = 'node_modules/.bin/rollup -c rollup.config.js';
+        return run_proc(cmd);
+    }
+});
 
 gulp.task('watch', function() {
     gulp.watch(sources.css, ['css'])

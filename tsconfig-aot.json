@@ -14,14 +14,19 @@
         ]
     },
     "compileOnSave": true,
-    "exclude": [
-        "node_modules/*"
+    "files": [
+        "builds/release/main-aot.ts",
+        "builds/release/app.module.ts"
     ],
     "include": [
-        "tmps/*"
+        "builds/release/*"
+    ],
+    "exclude": [
+        "node_modules/*",
+        "process/*"
     ],
     "angularCompilerOptions": {
-        "genDir": "aot",
+        "genDir": ".",
         "skipMetadataEmit": true
     }
 }

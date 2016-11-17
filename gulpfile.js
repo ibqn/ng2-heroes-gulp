@@ -1,5 +1,5 @@
 //jshint node:true
-'esversion:6';
+//jshint esversion: 6
 'use strict';
 
 var gulp          = require('gulp'),
@@ -20,12 +20,12 @@ var browserSync = require('browser-sync').create();
 var tscConfig = require('./tsconfig.json');
 
 
-var isProd = gutil.env.type === 'prod';
+var isProd = gutil.env.type === 'prod' || gutil.env.type === 'aot';
 
 
 var sourcesPath = 'process/';
 
-var targetsPath = 'builds/development/';
+var targetsPath = 'builds/' + isProd? 'release/': 'development/';
 
 var sources = {
     ts: sourcesPath + 'ts/**/*.ts',
@@ -42,24 +42,24 @@ var targets = {
 
 
 gulp.task('copylibs', function() {
+    // angular dependencies: *js and *map files
     gulp.src([
-        // angular
-        'core/bundles/core',
-        'common/bundles/common',
-        'compiler/bundles/compiler',
-        'platform-browser/bundles/platform-browser',
-        'platform-browser-dynamic/bundles/platform-browser-dynamic',
-        'http/bundles/http',
-        'router/bundles/router',
-        'forms/bundles/forms',
-        'upgrade/bundles/upgrade',
+        'core',
+        'common',
+        'compiler',
+        'platform-browser',
+        'platform-browser-dynamic',
+        'http',
+        'router',
+        'forms',
+        'upgrade',
     ].map(function(i) {
-        return 'node_modules/@angular/' + i + '.umd.js*';
+        return 'node_modules/@angular/' + i + '/bundles/' + i + '.umd.js*';
     }))
     .pipe(gulp.dest(targets.js + 'angular'));
 
     gulp.src([
-        // move ja and js.map files
+        // move js and js.map files
         'node_modules/rxjs/**/*.js*',
     ])
     .pipe(gulp.dest(targets.js + 'rxjs'));

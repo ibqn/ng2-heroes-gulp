@@ -25,7 +25,7 @@ var isProd = gutil.env.type === 'prod' || gutil.env.type === 'aot';
 
 var sourcesPath = 'process/';
 
-var targetsPath = 'builds/' + isProd? 'release/': 'development/';
+var targetsPath = 'builds/' + (isProd? 'release/' : 'development/');
 
 var sources = {
     ts: sourcesPath + 'ts/**/*.ts',

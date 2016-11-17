@@ -8,13 +8,18 @@
         "experimentalDecorators": true,
         "removeComments": false,
         "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "typeRoots": [
+            "node_modules/@types/"
+        ]
     },
-
+    "compileOnSave": true,
+    "exclude": [
+        "node_modules/*"
+    ],
     "include": [
         "tmps/*"
     ],
-
     "angularCompilerOptions": {
         "genDir": "aot",
         "skipMetadataEmit": true

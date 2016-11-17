@@ -104,7 +104,9 @@ gulp.task('css', function() {
 
 
 gulp.task('html', function() {
+    var f = filter(['**', '!**/index-aot.html']);
     return gulp.src(sources.html)
+    .pipe(gulpif(!isProd, f))
     .pipe(gulp.dest(targets.html));
 });
 

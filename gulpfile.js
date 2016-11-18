@@ -98,12 +98,12 @@ gulp.task('copylibs', () => {
 
 gulp.task('ts', () => {
     // filter main-aot.ts file in development
-    var f = filter(['**', '!**/main-aot.ts']);
+    let fltr = filter(['**', '!**/main-aot.ts']);
 
     return gulp.src([
         sources.ts,
     ])
-    .pipe(gulpif(!isProd, f))
+    .pipe(gulpif(!isProd, fltr))
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
     .pipe(gulpif(!isProd, sourcemaps.write('.')))
@@ -136,7 +136,9 @@ gulp.task('html', () => {
 });
 
 
-let run_proc = (cmd, cb) => {
+// helper function for running ngc and tree shaking tasks
+const run_proc = (cmd, cb) => {
+    if (!isProd) return;
     let proc = exec(cmd, (err, stdout, stderr) => {
         process.stdout.write(stdout);
         process.stdout.write(stderr);
@@ -146,7 +148,6 @@ let run_proc = (cmd, cb) => {
 
 
 gulp.task('ngc', ['css', 'html', 'ts'], cb => {
-    if (!isProd) return;
     let cmd  = 'node_modules/.bin/ngc -p tsconfig-aot.json';
     if (isWin) {
         cmd  = '"node_modules/.bin/ngc" -p tsconfig-aot.json';
@@ -156,8 +157,7 @@ gulp.task('ngc', ['css', 'html', 'ts'], cb => {
 
 
 gulp.task('rollup', ['ngc'], cb => {
-    if (!isProd) return;
-    var cmd  = 'node_modules/.bin/rollup -c rollup.config.js';
+    let cmd  = 'node_modules/.bin/rollup -c rollup.config.js';
     if (isWin) {
         cmd  = '"node_modules/.bin/rollup" -c rollup.config.js';
     }
@@ -165,14 +165,18 @@ gulp.task('rollup', ['ngc'], cb => {
 });
 
 
+let rollUp = isProd? ['rollup'] : [];
+
 gulp.task('watch', () => {
-    gulp.watch(sources.css, ['css'])
+    gulp.watch(sources.css, ['css'].concat(rollUp))
         .on('change', browserSync.reload);
-    gulp.watch(sources.html, ['html'])
+    gulp.watch(sources.html, ['html'].concat(rollUp))
         .on('change', browserSync.reload);
-    gulp.watch(sources.ts, ['ts'])
+    gulp.watch(sources.ts, ['ts'].concat(rollUp))
         .on('change', browserSync.reload);
     gulp.watch(sources.js, ['copylibs'])
+        .on('change', browserSync.reload);
+    gulp.watch(targets.js + '*.js')
         .on('change', browserSync.reload);
 });
 
@@ -182,7 +186,7 @@ gulp.task('browser-sync', [
     'ts',
     'html',
     'css',
-], () => {
+].concat(rollUp), () => {
     browserSync.init({
         server: {
             baseDir: targets.html,

@@ -8,6 +8,7 @@ const gulp          = require('gulp'),
       filter        = require('gulp-filter'),
       gulpif        = require('gulp-if'),
       rename        = require("gulp-rename"),
+      clean         = require('gulp-clean'),
       typescript    = require('gulp-typescript');
 
 const fs   = require('fs'),
@@ -16,11 +17,11 @@ const fs   = require('fs'),
 
 const exec = require('child_process').exec;
 
-var defaultFile = "index.html";
+const defaultFile = "index.html";
 
-var browserSync = require('browser-sync').create();
+const browserSync = require('browser-sync').create();
 
-var tscConfig = require('./tsconfig.json');
+const tscConfig = require('./tsconfig.json');
 
 // gulp should be called like this :
 // $ gulp --type aot
@@ -29,18 +30,18 @@ const isProd = gutil.env.type === 'prod' || gutil.env.type === 'aot';
 const isWin = /^win/.test(process.platform);
 
 
-var sourcesPath = 'process/';
+let sourcesPath = 'process/';
 
-var targetsPath = 'builds/' + (isProd? 'release/' : 'development/');
+let targetsPath = 'builds/' + (isProd? 'release/' : 'development/');
 
-var sources = {
+let sources = {
     ts: sourcesPath + 'ts/**/*.ts',
     html: sourcesPath + 'html/**/*.html',
     css: sourcesPath + 'css/**/*.css',
     js: sourcesPath + 'js/**/*.js',
 };
 
-var targets = {
+let targets = {
     css: targetsPath + 'css/',
     html: targetsPath,
     js: targetsPath + 'js/',
@@ -204,6 +205,12 @@ gulp.task('browser-sync', [
         reloadDelay: 300,
         reloadDebounce: 500
     });
+});
+
+
+gulp.task('clean', () => {
+    return gulp.src(targetsPath, {read: false})
+    .pipe(clean());
 });
 
 

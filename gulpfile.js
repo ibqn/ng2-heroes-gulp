@@ -98,12 +98,15 @@ gulp.task('copylibs', () => {
 
 gulp.task('ts', () => {
     // filter main-aot.ts file in development
-    let fltr = filter(['**', '!**/main-aot.ts']);
+    let fltr = filter([
+        '**',
+        '!**/main' + (isProd? '' : '-aot') + '.ts'
+    ]);
 
     return gulp.src([
         sources.ts,
     ])
-    .pipe(gulpif(!isProd, fltr))
+    .pipe(fltr)
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
     .pipe(gulpif(!isProd, sourcemaps.write('.')))

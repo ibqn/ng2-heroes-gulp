@@ -5,6 +5,8 @@ import { Location }                 from '@angular/common';
 import { HeroService } from './hero.service';
 import { Hero } from './hero';
 
+import 'rxjs/add/operator/switchMap';
+
 
 @Component({
     selector: 'my-hero-detail',
@@ -21,9 +23,19 @@ export class HeroDetailComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.route.params.forEach((params: Params) => {
+        this.route.params.switchMap((params: Params) => {
+            // convert string to a number
             let id: number = +params['id'];
-            this.heroService.getHero(id).then(hero => this.hero = hero);
-    });
-}
+            return this.heroService.getHero(id);
+        }).subscribe(hero => this.hero = hero);
+    }
+
+    goBack(): void {
+        this.location.back();
+    }
+
+    save(): void {
+        this.heroService.update(this.hero)
+            .then(() => this.goBack());
+    }
 }

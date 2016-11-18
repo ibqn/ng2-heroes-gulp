@@ -97,16 +97,14 @@ gulp.task('copylibs', () => {
 
 
 gulp.task('ts', () => {
-    // filter main-aot.ts file in development
-    let fltr = filter([
-        '**',
-        '!**/main' + (isProd? '' : '-aot') + '.ts'
-    ]);
-
     return gulp.src([
         sources.ts,
     ])
-    .pipe(fltr)
+    // filter main-aot.ts file in development
+    .pipe(filter([
+        '**',
+        '!**/main' + (isProd? '' : '-aot') + '.ts'
+    ]))
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
     .pipe(gulpif(!isProd, sourcemaps.write('.')))
@@ -122,19 +120,15 @@ gulp.task('css', () => {
 
 
 gulp.task('html', () => {
-    let fltr = filter([
-        '**/index' + (isProd? '-aot' : '') + '.html'
-    ]);
-
     gulp.src(sources.html)
-    .pipe(fltr)
+    .pipe(filter([
+        '**/index' + (isProd? '-aot' : '') + '.html'
+    ]))
     .pipe(rename({basename: 'index'}))
     .pipe(gulp.dest(targets.html));
 
-    fltr = filter(['**', '!**/index*.html']);
-
     return gulp.src(sources.html)
-    .pipe(fltr)
+    .pipe(filter(['**', '!**/index*.html']))
     .pipe(gulp.dest(targets.html));
 });
 

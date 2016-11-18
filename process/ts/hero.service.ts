@@ -12,10 +12,16 @@ export class HeroService {
 
     constructor(private http: Http) {}
 
+    private handleError(error: any): Promise<any> {
+        console.error('An HTTP error ocured', error);
+        return Promise.reject(error.message || error);
+    }
+
     getHeroes(): Promise<Hero[]> {
         return this.http.get(this.heroesUrl)
                    .toPromise()
-                   .then(response => response.json().data as Hero[]);
+                   .then(response => response.json().data as Hero[])
+                   .catch(this.handleError);
     }
 
     getHero(id: number): Promise<Hero> {

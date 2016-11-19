@@ -14,7 +14,7 @@ export class HeroService {
     constructor(private http: Http) {}
 
     private handleError(error: any): Promise<any> {
-        console.error('An HTTP error ocured', error);
+        console.error('An HTTP error occured', error);
         return Promise.reject(error.message || error);
     }
 
@@ -35,6 +35,17 @@ export class HeroService {
         return this.http.put(url, JSON.stringify(hero), {headers: this.headers})
         .toPromise()
         .then(() => hero)
+        .catch(this.handleError);
+    }
+
+    create(name: string): Promise<Hero> {
+        return this.http.post(
+            this.heroesUrl,
+            JSON.stringify({name: name}),
+            {headers: this.headers}
+        )
+        .toPromise()
+        .then(result => result.json().data as Hero)
         .catch(this.handleError);
     }
 }

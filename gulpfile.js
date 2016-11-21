@@ -162,6 +162,7 @@ gulp.task('rollup', ['ngc'], cb => {
     if (isWin) {
         cmd  = '"node_modules/.bin/rollup" -c rollup.config.js';
     }
+    cmd += ' && gzip --force builds/release/js/build.js';
     // Filter known warning messages!
     const errFilter = (messages) => {
         const warningMsg = /The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten\./;
@@ -205,6 +206,15 @@ gulp.task('browser-sync', [
                 let fileExists = fs.existsSync(targets.html + fileName);
                 if (!fileExists && fileName.indexOf("browser-sync-client") < 0) {
                     req.url = "/" + defaultFile;
+                }
+                return next();
+            },
+            (req, res, next) => {
+                let fileName = url.parse(req.url);
+                fileName = fileName.href.split(fileName.search).join("");
+                if(fileName.match(/\.gz$/g)) {
+                    //res.setHeader('Content-Type', 'text/html');
+                    res.setHeader('Content-Encoding', 'gzip');
                 }
                 return next();
             },

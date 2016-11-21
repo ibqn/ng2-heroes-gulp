@@ -1,5 +1,5 @@
 import { Injectable }     from '@angular/core';
-import { Http, Headers }  from '@angular/http';
+import { Http, Response, Headers }  from '@angular/http';
 
 import { Hero } from './hero';
 
@@ -18,10 +18,15 @@ export class HeroService {
         return Promise.reject(error.message || error);
     }
 
+    private extractData<T>(response: Response) {
+        let body = response.json();
+        return body.data || {} as T;
+    }
+
     getHeroes(): Promise<Hero[]> {
         return this.http.get(this.heroesUrl)
         .toPromise()
-        .then(response => response.json().data as Hero[])
+        .then(this.extractData)
         .catch(this.handleError);
     }
 
@@ -49,7 +54,7 @@ export class HeroService {
             {headers: this.headers}
         )
         .toPromise()
-        .then(result => result.json().data as Hero)
+        .then(this.extractData)
         .catch(this.handleError);
     }
 

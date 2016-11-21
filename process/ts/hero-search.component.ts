@@ -10,7 +10,7 @@ import { Hero } from './hero';
 @Component({
     selector: 'hero-search',
     templateUrl: 'hero-search.component.html',
-    styleUrls: ['hero-search.component.css'],
+    styleUrls: ['css/hero-search.component.css'],
     providers: [HeroSearchService]
 })
 export class HeroSearchComponent implements OnInit {
@@ -38,10 +38,11 @@ export class HeroSearchComponent implements OnInit {
         .distinctUntilChanged()    // ignore if search term is same as previous
         .switchMap(                // switch to new observable each time
             term => term
-            ? this.heroSearchService.search(term)
-            : Observable.of<Hero[]>([])
+            ? this.heroSearchService.search(term)   // return the http search observable
+            : Observable.of<Hero[]>([])             // or the observable of empty heroes if no search term
         )
         .catch(error => {
+            // TODO: real error handling
             console.log(error);
             return Observable.of<Hero[]>([]);
         });

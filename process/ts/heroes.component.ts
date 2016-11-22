@@ -22,9 +22,14 @@ export class HeroesComponent implements OnInit {
 
     selectedHero: Hero;
     heroes: Hero[];
+    errorMessage: string;
 
     getHeroes(): void {
-        this.heroService.getHeroes().then(heroes => this.heroes = heroes);
+        this.heroService.getHeroes()
+        .subscribe(
+            heroes => this.heroes = heroes,
+            error => this.errorMessage = <any>error
+        );
     }
 
     onSelect(hero: Hero): void {
@@ -39,19 +44,25 @@ export class HeroesComponent implements OnInit {
         name = name.trim();
         if (!name) return;
         this.heroService.create(name)
-        .then(hero => {
-            this.heroes.push(hero);
-            this.selectedHero = null;
-        });
+        .subscribe(
+            hero => {
+                this.heroes.push(hero);
+                this.selectedHero = null;
+            },
+            error =>  this.errorMessage = <any>error
+        );
     }
 
     delete(hero: Hero): void {
         this.heroService.delete(hero.id)
-        .then(() => {
-            this.heroes = this.heroes.filter(h => h !== hero);
-            if (this.selectedHero === hero) {
-                this.selectedHero = null;
-            }
-        });
+        .subscribe(
+            () => {
+                this.heroes = this.heroes.filter(h => h !== hero);
+                if (this.selectedHero === hero) {
+                    this.selectedHero = null;
+                }
+            },
+            error =>  this.errorMessage = <any>error
+        );
     }
 }

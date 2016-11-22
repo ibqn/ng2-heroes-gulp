@@ -1,9 +1,9 @@
-import { Injectable }     from '@angular/core';
+import { Injectable }               from '@angular/core';
 import { Http, Response, Headers }  from '@angular/http';
 
 import { Hero } from './hero';
 
-import 'rxjs/add/operator/toPromise';
+import { Observable } from 'rxjs/Observable'
 
 
 @Injectable()
@@ -13,9 +13,17 @@ export class HeroService {
 
     constructor(private http: Http) {}
 
-    private handleError(error: any): Promise<any> {
-        console.error('An HTTP error occured', error);
-        return Promise.reject(error.message || error);
+    private handleError(error: Response | any): Observable<any> {
+        let errMsg: string;
+        if (error instanceof Response) {
+            const body = error.json() || '';
+            const err = body.error || JSON.stringify(body);
+            errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
+        } else {
+            errMsg = error.message ? error.messsage : error.toString();
+        }
+        console.error(errMsg);
+        return Observable.throw(errMsg);
     }
 
     private extractData<T>(response: Response) {
@@ -23,46 +31,42 @@ export class HeroService {
         return body.data || {} as T;
     }
 
-    getHeroes(): Promise<Hero[]> {
+    getHeroes(): Observable<Hero[]> {
         return this.http.get(this.heroesUrl)
-        .toPromise()
-        .then(this.extractData)
+        .map(this.extractData)
         .catch(this.handleError);
     }
 
-    getHero(id: number): Promise<Hero> {
+    getHero(id: number): Observable<Hero> {
         return this.getHeroes()
-        .then(heroes => heroes.find(hero => hero.id === id));
+        .map(heroes => heroes.find(hero => hero.id === id));
     }
 
-    update(hero: Hero): Promise<Hero> {
+    update(hero: Hero): Observable<Hero> {
         const url = `${this.heroesUrl}/${hero.id}`;
         return this.http.put(
             url,
             JSON.stringify(hero),
             { headers: this.headers }
         )
-        .toPromise()
-        .then(() => hero)
+        .map(() => hero)
         .catch(this.handleError);
     }
 
-    create(name: string): Promise<Hero> {
+    create(name: string): Observable<Hero> {
         return this.http.post(
             this.heroesUrl,
             JSON.stringify({name: name}),
             {headers: this.headers}
         )
-        .toPromise()
-        .then(this.extractData)
+        .map(this.extractData)
         .catch(this.handleError);
     }
 
-    delete(id: number): Promise<number> {
+    delete(id: number): Observable<number> {
         const url = `${this.heroesUrl}/${id}`;
         return this.http.delete(url, {headers: this.headers})
-        .toPromise()
-        .then(() => id)
+        .map(() => id)
         .catch(this.handleError);
     }
 }

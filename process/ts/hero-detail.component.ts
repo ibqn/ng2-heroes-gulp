@@ -15,6 +15,8 @@ import 'rxjs/add/operator/switchMap';
 })
 export class HeroDetailComponent implements OnInit {
     @Input() hero: Hero;
+    errorMessage: string;
+
 
     constructor(
         private heroService: HeroService,
@@ -27,7 +29,10 @@ export class HeroDetailComponent implements OnInit {
             // convert string to a number
             let id: number = +params['id'];
             return this.heroService.getHero(id);
-        }).subscribe(hero => this.hero = hero);
+        }).subscribe(
+            hero => this.hero = hero,
+            error =>  this.errorMessage = <any>error
+        );
     }
 
     goBack(): void {
@@ -36,6 +41,9 @@ export class HeroDetailComponent implements OnInit {
 
     save(): void {
         this.heroService.update(this.hero)
-            .then(() => this.goBack());
+        .subscribe(
+            () => this.goBack(),
+            error =>  this.errorMessage = <any>error
+        );
     }
 }

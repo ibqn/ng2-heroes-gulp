@@ -10,13 +10,13 @@ import { HeroService } from './hero.service'
   styleUrls: ['css/dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-	heroes: Hero[];
+    heroes: Hero[];
     errorMessage: string;
 
-	constructor(private heroService: HeroService) {}
+    constructor(private heroService: HeroService) {}
 
-	ngOnInit(): void {
-    	this.heroService.getHeroes()
+    ngOnInit(): void {
+        this.heroService.getHeroes()
         .subscribe(
             heroes => this.heroes = heroes.slice(1, 5),
             error =>  this.errorMessage = <any>error

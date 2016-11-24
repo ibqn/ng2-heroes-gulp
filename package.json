@@ -26,6 +26,7 @@
     "@types/core-js": "^0.9.34",
     "@types/node": "^6.0.50",
     "browser-sync": "^2.18.2",
+    "connect-logger": "0.0.1",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-filter": "^4.0.0",

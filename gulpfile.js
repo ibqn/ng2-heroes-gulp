@@ -200,6 +200,10 @@ gulp.task('browser-sync', [
         },
         // Middleware for serving Single Page Applications (SPA)
         middleware: [
+            require("connect-logger")({
+                //format: "%date %status %method %url (%time)"
+                // default: %date %status %method %url (%route - %time)
+            }),
             (req, res, next) => {
                 let fileName = url.parse(req.url);
                 fileName = fileName.href.split(fileName.search).join("");

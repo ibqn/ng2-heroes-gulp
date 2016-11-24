@@ -32,7 +32,7 @@ const isWin = /^win/.test(process.platform);
 
 let sourcesPath = 'process/';
 
-let targetsPath = 'builds/' + (isProd? 'release/' : 'development/');
+let targetsPath = 'builds/' + (isProd ? 'release/' : 'development/');
 
 let sources = {
     ts: sourcesPath + 'ts/**/*.ts',
@@ -42,10 +42,10 @@ let sources = {
 };
 
 let targets = {
-    css: targetsPath + 'css/',
+    css: targetsPath + (isProd ? '' : 'css/'),
     html: targetsPath,
     js: targetsPath + 'js/',
-    ts: targetsPath  +  (isProd? '' : 'js/app/'),
+    ts: targetsPath  +  (isProd ? '' : 'js/app/'),
 };
 
 
@@ -104,7 +104,7 @@ gulp.task('ts', () => {
     // filter main-aot.ts file in development
     .pipe(filter([
         '**',
-        '!**/main' + (isProd? '' : '-aot') + '.ts'
+        '!**/main' + (isProd ? '' : '-aot') + '.ts'
     ]))
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
@@ -123,7 +123,7 @@ gulp.task('css', () => {
 gulp.task('html', () => {
     gulp.src(sources.html)
     .pipe(filter([
-        '**/index' + (isProd? '-aot' : '') + '.html'
+        '**/index' + (isProd ? '-aot' : '') + '.html'
     ]))
     .pipe(rename({basename: 'index'}))
     .pipe(gulp.dest(targets.html));
@@ -172,7 +172,7 @@ gulp.task('rollup', ['ngc'], cb => {
 });
 
 
-let rollUp = isProd? ['rollup'] : [];
+let rollUp = isProd ? ['rollup'] : [];
 
 gulp.task('watch', () => {
     gulp.watch(sources.css, ['css'].concat(rollUp))
@@ -194,9 +194,12 @@ gulp.task('browser-sync', [
     'html',
     'css',
 ].concat(rollUp), () => {
+    let baseDirs = isProd ? [targets.html] : [targets.html, targets.css];
     browserSync.init({
-        server: {
-            baseDir: targets.html,
+        server: baseDirs,
+        files: ['./**/*.{html,css,js}'],
+        watchOptions: {
+            ignored: 'node_modules'
         },
         // Middleware for serving Single Page Applications (SPA)
         middleware: [
@@ -207,7 +210,9 @@ gulp.task('browser-sync', [
             (req, res, next) => {
                 let fileName = url.parse(req.url);
                 fileName = fileName.href.split(fileName.search).join("");
-                let fileExists = fs.existsSync(targets.html + fileName);
+                let fileExists = baseDirs
+                .map(e => fs.existsSync(e + fileName))
+                .some(e => e);
                 if (!fileExists && fileName.indexOf("browser-sync-client") < 0) {
                     req.url = "/" + defaultFile;
                 }

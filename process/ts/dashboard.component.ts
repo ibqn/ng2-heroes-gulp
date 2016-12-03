@@ -7,9 +7,9 @@ import { Observable } from 'rxjs/Observable';
 
 
 @Component({
-  selector: 'my-dashboard',
-  templateUrl: 'dashboard.component.html',
-  styleUrls: ['dashboard.component.css']
+    selector: 'my-dashboard',
+    templateUrl: 'dashboard.component.html',
+    styleUrls: ['dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
     heroes: Observable<Hero[]>;

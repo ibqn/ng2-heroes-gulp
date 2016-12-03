@@ -213,7 +213,11 @@ gulp.task('browser-sync', [
                 let fileExists = baseDirs
                 .map(e => fs.existsSync(e + fileName))
                 .some(e => e);
-                if (!fileExists && fileName.indexOf("browser-sync-client") < 0) {
+                if(
+                    !fileExists &&
+                    fileName.indexOf("browser-sync-client") < 0 &&
+                    !fileName.match(/\.(gz|css|js|html)$/g)
+                ) {
                     req.url = "/" + defaultFile;
                 }
                 return next();

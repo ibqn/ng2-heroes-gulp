@@ -228,7 +228,7 @@ gulp.task('browser-sync', [
                 return next();
             },
         ],
-        port: 8080,
+        port: 8000,
         reloadDelay: 300,
         reloadDebounce: 500
     });

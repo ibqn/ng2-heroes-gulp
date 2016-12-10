@@ -9,10 +9,12 @@ const gulp          = require('gulp'),
       gulpif        = require('gulp-if'),
       rename        = require("gulp-rename"),
       clean         = require('gulp-clean'),
+      changed       = require('gulp-changed'),
       typescript    = require('gulp-typescript');
 
 const fs   = require('fs'),
       path = require('path'),
+      glob = require('glob'),
       url  = require('url');
 
 const exec = require('child_process').exec;
@@ -55,6 +57,7 @@ gulp.task('copylibs', () => {
             'core-js/client/shim',
             'zone.js/dist/zone',
         ].map(i => { return 'node_modules/' + i + '.min.js*'; }))
+        .pipe(changed(targets.js))
         .pipe(gulp.dest(targets.js));
     }
 
@@ -72,12 +75,14 @@ gulp.task('copylibs', () => {
     ].map(i => {
         return 'node_modules/@angular/' + i + '/bundles/' + i + '.umd.js*';
     }))
+    .pipe(changed(targets.js + 'angular'))
     .pipe(gulp.dest(targets.js + 'angular'));
 
     gulp.src([
         // move js and js.map files
         'node_modules/rxjs/**/*.js*',
     ])
+    .pipe(changed(targets.js + 'rxjs'))
     .pipe(gulp.dest(targets.js + 'rxjs'));
 
     gulp.src([
@@ -88,11 +93,13 @@ gulp.task('copylibs', () => {
         'reflect-metadata/Reflect',
         'systemjs/dist/system.src',
     ].map(i => { return 'node_modules/' + i + '.js*'; }))
+    .pipe(changed(targets.js))
     .pipe(gulp.dest(targets.js));
 
     return gulp.src([
         sources.js,
     ])
+    .pipe(changed(targets.js))
     .pipe(gulp.dest(targets.js));
 });
 
@@ -106,6 +113,7 @@ gulp.task('ts', () => {
         '**',
         '!**/main' + (isProd ? '' : '-aot') + '.ts'
     ]))
+    .pipe(changed(targets.ts, {extension: '.js'}))
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
     .pipe(gulpif(!isProd, sourcemaps.write('.')))
@@ -115,6 +123,7 @@ gulp.task('ts', () => {
 
 gulp.task('css', () => {
     return gulp.src(sources.css)
+    .pipe(changed(targets.css))
     .pipe(gulp.dest(targets.css))
     .pipe(browserSync.stream());
 });
@@ -126,10 +135,12 @@ gulp.task('html', () => {
         '**/index' + (isProd ? '-aot' : '') + '.html'
     ]))
     .pipe(rename({basename: 'index'}))
+    .pipe(changed(targets.html))
     .pipe(gulp.dest(targets.html));
 
     return gulp.src(sources.html)
     .pipe(filter(['**', '!**/index*.html']))
+    .pipe(changed(targets.html))
     .pipe(gulp.dest(targets.html));
 });
 
@@ -174,7 +185,7 @@ gulp.task('rollup', ['ngc'], cb => {
 
 let rollUp = isProd ? ['rollup'] : [];
 
-gulp.task('watch', () => {
+gulp.task('watch', ['browser-sync'], () => {
     gulp.watch(sources.css, ['css'].concat(rollUp))
         .on('change', browserSync.reload);
     gulp.watch(sources.html, ['html'].concat(rollUp))
@@ -183,7 +194,7 @@ gulp.task('watch', () => {
         .on('change', browserSync.reload);
     gulp.watch(sources.js, ['copylibs'])
         .on('change', browserSync.reload);
-    gulp.watch(targets.js + '*.js')
+    gulp.watch(targets.js + '**/*.js')
         .on('change', browserSync.reload);
 });
 
@@ -194,7 +205,17 @@ gulp.task('browser-sync', [
     'html',
     'css',
 ].concat(rollUp), () => {
-    let baseDirs = isProd ? [targets.html] : [targets.html, targets.css];
+    let baseDirs = [targets.html];
+    if(!isProd) {
+        // Obtain the app module names on the fly, based on the typescript folder stucture
+        const appModules = glob.sync(sourcesPath + 'ts/*')
+            .filter(p => fs.statSync(p).isDirectory())
+            .map(p => path.basename(p))
+            .concat(['']);
+        baseDirs = []
+            .concat(appModules.map(f => targets.css + f))
+            .concat(appModules.map(f => targets.html + f));
+    }
     browserSync.init({
         server: baseDirs,
         files: ['./**/*.{html,css,js}'],
@@ -211,8 +232,8 @@ gulp.task('browser-sync', [
                 let fileName = url.parse(req.url);
                 fileName = fileName.href.split(fileName.search).join("");
                 let fileExists = baseDirs
-                .map(e => fs.existsSync(e + fileName))
-                .some(e => e);
+                    .map(e => fs.existsSync(e + fileName) && !fs.statSync(e + fileName).isDirectory())
+                    .some(e => e);
                 if(
                     !fileExists &&
                     fileName.indexOf("browser-sync-client") < 0 &&
@@ -250,6 +271,6 @@ gulp.task('default', [
     'ts',
     'html',
     'css',
-    'watch',
     'browser-sync',
+    'watch',
 ]);

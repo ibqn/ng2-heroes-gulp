@@ -113,10 +113,10 @@ gulp.task('ts', () => {
         '**',
         '!**/main' + (isProd ? '' : '-aot') + '.ts'
     ]))
-    .pipe(changed(targets.ts, {extension: '.js'}))
     .pipe(gulpif(!isProd, sourcemaps.init()))
     .pipe(gulpif(!isProd, typescript(tscConfig.compilerOptions)))
     .pipe(gulpif(!isProd, sourcemaps.write('.')))
+    .pipe(changed(targets.ts, {extension: '.js'}))
     .pipe(gulp.dest(targets.ts));
 });
 
